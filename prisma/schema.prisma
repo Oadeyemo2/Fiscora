@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  clerkUserId   String    @unique // clerk user id
+  email         String    @unique
+  name          String?
+  imageUrl      String?
+  transactions  Transaction[]
+  accounts      Account[]
+  budgets       Budget[]
+  // Sprint 3
+  categories    Category[]
+  loans         Loan[]
+  aiMessages    AiMessage[]
+  notifications Notification[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@map("users")
+}
+
+model Account {
+  id           String        @id @default(uuid())
+  name         String
+  type         AccountType
+  balance      Decimal       @default(0) // will ask inital balance while creating an account
+  isDefault    Boolean       @default(false)
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Transaction {
+  id                String            @id @default(uuid())
+  type             TransactionType
+  amount           Decimal
+  description      String?
+  date             DateTime
+  category         String           
+  receiptUrl       String?
+  isRecurring      Boolean           @default(false)
+  recurringInterval RecurringInterval? // Only used if isRecurring is true
+  nextRecurringDate DateTime?         // Next date for recurring transaction
+  lastProcessed    DateTime?         // Last time this recurring transaction was processed
+  status           TransactionStatus  @default(COMPLETED)
+  userId           String
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId        String
+  account          Account           @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([accountId])
+  @@map("transactions")
+}
+
+
+model Budget {
+  id          String       @id @default(uuid())
+  amount      Decimal
+  lastAlertSent DateTime?  // Track when the last alert was sent
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([userId])
+  @@map("budgets")
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum AccountType {
+  CURRENT
+  SAVINGS
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum RecurringInterval {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+// ---------------------------------------------------------------
+// Sprint 3 tables
+// ---------------------------------------------------------------
+
+// UC-7 Manage Categories: custom categories a user adds on top of
+// the default list in data/categories.js
+model Category {
+  id        String          @id @default(uuid())
+  name      String
+  type      TransactionType
+  color     String          @default("#64748b")
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@unique([userId, type, name])
+  @@index([userId])
+  @@map("categories")
+}
+
+// UC-11 Loan Tracking and Calculator (client requirement)
+model Loan {
+  id             String     @id @default(uuid())
+  name           String
+  lender         String
+  loanType       LoanType
+  principal      Decimal
+  interestRate   Decimal    // annual percentage rate, e.g. 6.5
+  termMonths     Int
+  startDate      DateTime
+  monthlyPayment Decimal    // calculated when the loan is saved
+  totalInterest  Decimal    // calculated when the loan is saved
+  payoffDate     DateTime   // calculated when the loan is saved
+  status         LoanStatus @default(ACTIVE)
+  userId         String
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  @@index([userId])
+  @@map("loans")
+}
+
+// UC-8 AI Financial Advice: chat history
+model AiMessage {
+  id        String     @id @default(uuid())
+  role      ChatRole
+  content   String
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+
+  @@index([userId])
+  @@map("ai_messages")
+}
+
+// UC-10 Email Notifications: one row per notification with delivery status
+model Notification {
+  id        String             @id @default(uuid())
+  type      NotificationType
+  title     String
+  message   String
+  status    NotificationStatus @default(QUEUED)
+  isRead    Boolean            @default(false)
+  attempts  Int                @default(0)
+  userId    String
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime           @default(now())
+  sentAt    DateTime?
+
+  @@index([userId])
+  @@map("notifications")
+}
+
+enum LoanType {
+  STUDENT
+  AUTO
+  PERSONAL
+  MORTGAGE
+  OTHER
+}
+
+enum LoanStatus {
+  ACTIVE
+  PAID_OFF
+}
+
+enum ChatRole {
+  USER
+  ASSISTANT
+}
+
+enum NotificationType {
+  BUDGET_ALERT
+  WEEKLY_SUMMARY
+  UNUSUAL_TRANSACTION
+  LOAN_ADDED
+}
+
+enum NotificationStatus {
+  QUEUED
+  SENT
+  FAILED
+}
