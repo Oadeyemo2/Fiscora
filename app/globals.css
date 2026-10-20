@@ -122,11 +122,11 @@
 }
 @layer utilities {
   .gradient {
-    @apply bg-gradient-to-br from-blue-600 to-purple-600;
+    @apply bg-gradient-to-br from-emerald-600 to-teal-700;
   }
   .gradient-title {
     @apply font-extrabold tracking-tighter text-transparent bg-clip-text inline-block;
-    background-image: linear-gradient(to bottom right, #2563eb, #9333ea); /* fallback gradient */
+    background-image: linear-gradient(to bottom right, #047857, #0d9488);
   }
 }
 
