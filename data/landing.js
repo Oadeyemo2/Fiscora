@@ -1,75 +1,116 @@
-
 import {
-  BarChart3,
-  Receipt,
-  PieChart,
-  CreditCard,
+  LayoutDashboard,
+  Target,
+  Wallet,
   Landmark,
-  Zap,
+  MessageSquareText,
+  Tags,
+  BellRing,
+  Trophy,
+  SunMoon,
+  UserPlus,
+  ArrowDownUp,
+  Sparkles,
 } from "lucide-react";
+import { ReceiptScanIcon } from "@/components/feature-icons";
 
-// Stats Data
+const iconClass = "h-6 w-6 text-emerald-700";
+
+// Stats strip under the hero
 export const statsData = [
-  { value: "15", label: "Planned features" },
-  { value: "2", label: "AI features: receipt scanner and advisor" },
-  { value: "8", label: "Database tables" },
-  { value: "$0", label: "Cost to use" },
+  { value: "Free", label: "No subscription or card needed" },
+  { value: "2 AI tools", label: "Receipt scanner and money advisor" },
+  { value: "8", label: "Features you can use today" },
+  { value: "1 place", label: "Accounts, budget and loans together" },
 ];
 
-// Features Data
+// Features. Live ones link to their page; planned ones are shown but not clickable.
 export const featuresData = [
   {
-    icon: <BarChart3 className="h-8 w-8 text-blue-600" />,
-    title: "Spending Overview",
-    description: "See this month's income, expenses and budget on one dashboard, with a chart of where the money went.",
+    icon: <LayoutDashboard className={iconClass} />,
+    title: "Money at a glance",
+    description: "Income, spending and every account balance on one dashboard, with a chart of where this month went.",
+    href: "/dashboard",
+    status: "live",
   },
   {
-    icon: <Receipt className="h-8 w-8 text-blue-600" />,
-    title: "AI Receipt Scanner",
-    description: "Snap a receipt and the amount, date, store and category are filled in for you.",
+    icon: <ReceiptScanIcon className={iconClass} />,
+    title: "Snap-to-log receipts",
+    description: "Take a photo of a receipt and the amount, date, store and category fill themselves in.",
+    href: "/transaction/create",
+    status: "live",
   },
   {
-    icon: <PieChart className="h-8 w-8 text-blue-600" />,
-    title: "Budget Planning",
-    description: "Set a monthly budget, watch your progress and get an alert when you reach 80%.",
+    icon: <Target className={iconClass} />,
+    title: "Monthly budget",
+    description: "Pick a spending limit and watch the bar fill up. You get an email when you reach 80%.",
+    href: "/dashboard",
+    status: "live",
   },
   {
-    icon: <CreditCard className="h-8 w-8 text-blue-600" />,
-    title: "Multi-Account Support",
-    description: "Keep checking and savings accounts side by side, each with its own balance and history.",
+    icon: <Wallet className={iconClass} />,
+    title: "All your accounts",
+    description: "Checking and savings side by side, each with its own balance and history.",
+    href: "/dashboard",
+    status: "live",
   },
   {
-    icon: <Landmark className="h-8 w-8 text-blue-600" />,
-    title: "Loan Tracking",
-    description: "Log student, auto or personal loans and see the monthly payment, total interest and payoff date.",
+    icon: <Landmark className={iconClass} />,
+    title: "Loan planner",
+    description: "Log a student, car or personal loan and see the monthly payment, total interest and payoff date.",
+    href: "/loans",
+    status: "live",
   },
   {
-    icon: <Zap className="h-8 w-8 text-blue-600" />,
-    title: "AI Financial Advisor",
-    description: "Ask questions about your money and get answers based on your own recent spending.",
+    icon: <MessageSquareText className={iconClass} />,
+    title: "Ask the AI advisor",
+    description: "Ask about your money in plain words. Answers come from your own last 90 days, not generic tips.",
+    href: "/advisor",
+    status: "live",
+  },
+  {
+    icon: <Tags className={iconClass} />,
+    title: "Your own categories",
+    description: "Add categories like Textbooks or Tutoring next to the built-in ones.",
+    href: "/categories",
+    status: "live",
+  },
+  {
+    icon: <BellRing className={iconClass} />,
+    title: "Alerts that matter",
+    description: "Budget warnings and loan updates, kept in one inbox inside the app.",
+    href: "/notifications",
+    status: "live",
+  },
+  {
+    icon: <Trophy className={iconClass} />,
+    title: "Rewards for good habits",
+    description: "Earn badges for staying on budget and paying loans on time.",
+    status: "soon",
+  },
+  {
+    icon: <SunMoon className={iconClass} />,
+    title: "Light and dark mode",
+    description: "Switch the whole app to a darker look that is easier on the eyes at night.",
+    status: "soon",
   },
 ];
 
-// How It Works Data
+// Getting started steps
 export const howItWorksData = [
   {
-    icon: <CreditCard className="h-8 w-8 text-blue-600" />,
-    title: "1. Create Your Account",
-    description:
-      "Get started in minutes with our simple and secure sign-up process",
+    icon: <UserPlus className={iconClass} />,
+    title: "Create your account",
+    description: "Sign up with your email and confirm it with the 6-digit code we send you.",
   },
   {
-    icon: <BarChart3 className="h-8 w-8 text-blue-600" />,
-    title: "2. Track Your Spending",
-    description:
-      "Automatically categorize and track your transactions in real-time",
+    icon: <ArrowDownUp className={iconClass} />,
+    title: "Add your money",
+    description: "Add an account, then log income and expenses by typing them or scanning a receipt.",
   },
   {
-    icon: <PieChart className="h-8 w-8 text-blue-600" />,
-    title: "3. Get Insights",
-    description:
-      "Receive AI-powered insights and recommendations to optimize your finances",
+    icon: <Sparkles className={iconClass} />,
+    title: "Plan ahead",
+    description: "Set a budget, map out your loans and ask the AI advisor where you can save.",
   },
 ];
-
-
