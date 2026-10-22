@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon, Loader2 } from "lucide-react";
@@ -27,7 +27,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { CreateAccountDrawer } from "@/components/create-account-drawer";
 import { cn } from "@/lib/utils";
-import { createTransaction, updateTransaction } from "@/actions/transaction";
+import { createTransaction, updateTransaction, getDescriptionSuggestions } from "@/actions/transaction";
 import { transactionSchema } from "@/app/lib/schema";
 import { ReceiptScanner } from "./recipt-scanner";
 
@@ -123,6 +123,24 @@ export function AddTransactionForm({
   const type = watch("type");
   const isRecurring = watch("isRecurring");
   const date = watch("date");
+  const category = watch("category");
+  const description = watch("description");
+
+  // Feature 12: suggest descriptions used before in the chosen category
+  const [suggestions, setSuggestions] = useState([]);
+  useEffect(() => {
+    let cancelled = false;
+    if (!category) {
+      setSuggestions([]);
+      return;
+    }
+    getDescriptionSuggestions(category).then((list) => {
+      if (!cancelled) setSuggestions(list || []);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [category]);
 
   const filteredCategories = categories.filter(
     (category) => category.type === type
@@ -259,6 +277,23 @@ export function AddTransactionForm({
       <div className="space-y-2">
         <label className="text-sm font-medium">Description</label>
         <Input placeholder="Enter description" {...register("description")} />
+        {suggestions.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-muted-foreground">Used before:</span>
+            {suggestions
+              .filter((text) => text !== description)
+              .map((text) => (
+                <button
+                  key={text}
+                  type="button"
+                  onClick={() => setValue("description", text)}
+                  className="rounded-full border px-3 py-1 text-xs hover:bg-accent"
+                >
+                  {text}
+                </button>
+              ))}
+          </div>
+        )}
         {errors.description && (
           <p className="text-sm text-red-500">{errors.description.message}</p>
         )}
