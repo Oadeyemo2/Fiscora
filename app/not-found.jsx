@@ -6,7 +6,7 @@ export default function NotFound() {
     <div className="flex flex-col items-center justify-center min-h-[100vh] px-4 text-center">
       <h1 className="text-6xl font-bold gradient-title mb-4">404</h1>
       <h2 className="text-2xl font-semibold mb-4">clicking random links on the internet doesn’t guarantee success</h2>
-      <p className="text-gray-600 mb-8">
+      <p className="text-gray-600 mb-8 dark:text-gray-400">
         Oh no… the precious page you seek has mysteriously vanished into the digital abyss
       </p>
       <Link href="/">
