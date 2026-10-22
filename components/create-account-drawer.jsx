@@ -113,8 +113,9 @@ export function CreateAccountDrawer({ children }) {
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="CURRENT">Current</SelectItem>
+                  <SelectItem value="CURRENT">Checking</SelectItem>
                   <SelectItem value="SAVINGS">Savings</SelectItem>
+                  <SelectItem value="CREDIT_CARD">Credit card</SelectItem>
                 </SelectContent>
               </Select>
               {errors.type && (

@@ -8,25 +8,36 @@ import {
 import Link from "next/link"
 import Image from "next/image";
 import { Button } from './ui/button';
-import { PenBox, LayoutDashboard, Landmark, Bot, Tags, Bell } from "lucide-react";
+import { PenBox, LayoutDashboard, Landmark, Bot, Tags, Bell, Trophy, ShieldCheck } from "lucide-react";
 import { checkUser } from "@/lib/checkUser";
+import { ThemeToggle } from "./theme-toggle";
 
 
 const Header = async () => {
-      await checkUser();
+  const user = await checkUser();
+  const isAdmin = user?.role === "ADMIN";
   return (
-    <div className='fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b'>    
+    <div className='fixed top-0 w-full bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md z-50 border-b'>
 
         <nav className='container mx-auto px-4 py-4 flex items-center justify-between'>
             <Link href='/' className='flex items-center gap-2' aria-label='Fiscora home'>
             <Image src="/fiscora-mark.svg" alt="" height={40} width={40} className="h-10 w-10" priority />
-            <span className='text-2xl font-extrabold tracking-tight text-emerald-900'>Fiscora</span>
+            <span className='text-2xl font-extrabold tracking-tight text-emerald-900 dark:text-emerald-300'>Fiscora</span>
             </Link>
-            
-            <div className='flex items-center space-x-4 '>
+
+            <div className='flex items-center space-x-2 md:space-x-3'>
             <SignedIn>
-                <Link href="/dashboard" className='text-gray-600 hover:text-emerald-700 flex items-center gap-2'>
-                <Button variant= "outline">
+                {isAdmin && (
+                <Link href="/admin" title="Admin">
+                <Button variant="outline" className='flex items-center gap-2'>
+                    <ShieldCheck size={18} />
+                    <span className='hidden md:inline'>Admin</span>
+                </Button>
+                </Link>
+                )}
+
+                <Link href={isAdmin ? "/dashboard?view=me" : "/dashboard"}>
+                <Button variant= "outline" className='flex items-center gap-2'>
                     <LayoutDashboard size= {18} />
                     <span className='hidden md:inline'>Dashboard</span>
                 </Button>
@@ -43,6 +54,12 @@ const Header = async () => {
                 <Button variant="ghost" className='flex items-center gap-2'>
                     <Bot size={18} />
                     <span className='hidden lg:inline'>AI Advisor</span>
+                </Button>
+                </Link>
+
+                <Link href="/rewards" title="Rewards">
+                <Button variant="ghost" size="icon">
+                    <Trophy size={18} />
                 </Button>
                 </Link>
 
@@ -67,6 +84,8 @@ const Header = async () => {
 
             </SignedIn>
 
+            <ThemeToggle />
+
             <SignedOut>
               <SignInButton forceRedirectUrl='/dashboard'>
                 <Button variant= "outline">Login</Button>
@@ -86,7 +105,7 @@ const Header = async () => {
               }}
             />            </SignedIn>
             </div>
-        </nav>        
+        </nav>
             </div>
   )
 }

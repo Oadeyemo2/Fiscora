@@ -14,13 +14,13 @@ import {
 } from "lucide-react";
 import { ReceiptScanIcon } from "@/components/feature-icons";
 
-const iconClass = "h-6 w-6 text-emerald-700";
+const iconClass = "h-6 w-6 text-emerald-700 dark:text-emerald-400";
 
 // Stats strip under the hero
 export const statsData = [
   { value: "Free", label: "No subscription or card needed" },
   { value: "2 AI tools", label: "Receipt scanner and money advisor" },
-  { value: "8", label: "Features you can use today" },
+  { value: "15", label: "Features you can use today" },
   { value: "1 place", label: "Accounts, budget and loans together" },
 ];
 
@@ -85,14 +85,16 @@ export const featuresData = [
   {
     icon: <Trophy className={iconClass} />,
     title: "Rewards for good habits",
-    description: "Earn badges for staying on budget and paying loans on time.",
-    status: "soon",
+    description: "Earn badges and points for logging regularly, staying on budget and paying off loans.",
+    href: "/rewards",
+    status: "live",
   },
   {
     icon: <SunMoon className={iconClass} />,
     title: "Light and dark mode",
-    description: "Switch the whole app to a darker look that is easier on the eyes at night.",
-    status: "soon",
+    description: "Switch the whole app to a darker look with the moon button at the top.",
+    href: "/dashboard",
+    status: "live",
   },
 ];
 

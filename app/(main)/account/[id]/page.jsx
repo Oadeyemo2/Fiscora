@@ -22,7 +22,7 @@ export default async function AccountPage({ params }) {
             {account.name}
           </h1>
           <p className="text-muted-foreground">
-            {account.type.charAt(0) + account.type.slice(1).toLowerCase()}{" "}
+            {{ CURRENT: "Checking", SAVINGS: "Savings", CREDIT_CARD: "Credit card" }[account.type] || account.type}{" "}
             Account
           </p>
         </div>

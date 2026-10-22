@@ -9,22 +9,22 @@ function FeatureRow({ feature }) {
   const live = feature.status === "live";
   const body = (
     <>
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 ring-1 ring-emerald-100">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-50 ring-1 ring-emerald-100 dark:bg-emerald-950/50 dark:ring-emerald-900">
         {feature.icon}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <h3 className="font-semibold text-gray-900">{feature.title}</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100">{feature.title}</h3>
           {!live && (
             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-800">
               Coming soon
             </span>
           )}
         </div>
-        <p className="mt-1 text-sm text-gray-600">{feature.description}</p>
+        <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{feature.description}</p>
       </div>
       {live && (
-        <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-emerald-700 transition-transform group-hover:translate-x-1" />
+        <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-emerald-700 dark:text-emerald-400 transition-transform group-hover:translate-x-1" />
       )}
     </>
   );
@@ -36,7 +36,7 @@ function FeatureRow({ feature }) {
     <li>
       <Link
         href={feature.href}
-        className="group flex gap-4 rounded-xl p-4 transition-colors hover:bg-emerald-50/70 focus-visible:outline-2 focus-visible:outline-emerald-600"
+        className="group flex gap-4 rounded-xl p-4 transition-colors hover:bg-emerald-50/70 focus-visible:outline-2 focus-visible:outline-emerald-600 dark:hover:bg-emerald-950/40"
       >
         {body}
       </Link>
@@ -46,17 +46,17 @@ function FeatureRow({ feature }) {
 
 const LandingPage = () => {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white dark:bg-background">
       <HeroSection />
 
       {/* Stats strip */}
-      <section className="border-y border-emerald-100 bg-emerald-50/60 py-12">
+      <section className="border-y border-emerald-100 bg-emerald-50/60 py-12 dark:border-emerald-900 dark:bg-emerald-950/30">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
             {statsData.map((stat) => (
               <div key={stat.label} className="text-center">
-                <div className="mb-1 text-3xl font-bold text-emerald-800">{stat.value}</div>
-                <div className="text-sm text-gray-600">{stat.label}</div>
+                <div className="mb-1 text-3xl font-bold text-emerald-800 dark:text-emerald-300">{stat.value}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -67,9 +67,9 @@ const LandingPage = () => {
       <section id="features" className="py-20">
         <div className="container mx-auto grid gap-12 px-4 lg:grid-cols-[3fr_2fr] lg:gap-16">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-wider text-emerald-700">Features</p>
-            <h2 className="mt-2 text-3xl font-bold text-gray-900">What you can do with Fiscora</h2>
-            <p className="mt-2 text-gray-600">Click any live feature to open it. You&apos;ll be asked to sign in first if you haven&apos;t yet.</p>
+            <p className="text-sm font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Features</p>
+            <h2 className="mt-2 text-3xl font-bold text-gray-900 dark:text-gray-100">What you can do with Fiscora</h2>
+            <p className="mt-2 text-gray-600 dark:text-gray-400">Click any live feature to open it. You&apos;ll be asked to sign in first if you haven&apos;t yet.</p>
             <ul className="mt-6 space-y-1">
               {featuresData.map((feature) => (
                 <FeatureRow key={feature.title} feature={feature} />
@@ -78,8 +78,8 @@ const LandingPage = () => {
           </div>
 
           <div className="lg:sticky lg:top-28 lg:self-start">
-            <p className="text-sm font-semibold uppercase tracking-wider text-emerald-700">Getting started</p>
-            <h2 className="mt-2 text-3xl font-bold text-gray-900">Up and running in three steps</h2>
+            <p className="text-sm font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">Getting started</p>
+            <h2 className="mt-2 text-3xl font-bold text-gray-900 dark:text-gray-100">Up and running in three steps</h2>
             <ol className="mt-8 space-y-8">
               {howItWorksData.map((step, index) => (
                 <li key={step.title} className="relative flex gap-4">
@@ -92,9 +92,9 @@ const LandingPage = () => {
                   <div>
                     <div className="flex items-center gap-2">
                       {step.icon}
-                      <h3 className="font-semibold text-gray-900">{step.title}</h3>
+                      <h3 className="font-semibold text-gray-900 dark:text-gray-100">{step.title}</h3>
                     </div>
-                    <p className="mt-1 text-sm text-gray-600">{step.description}</p>
+                    <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{step.description}</p>
                   </div>
                 </li>
               ))}

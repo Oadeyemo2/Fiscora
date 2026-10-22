@@ -1,4 +1,5 @@
-import { Suspense } from "react";
+import { redirect } from "next/navigation";
+import { getAdminUser } from "@/actions/admin";
 import { getUserAccounts } from "@/actions/dashboard";
 import { getDashboardData } from "@/actions/dashboard";
 import { getCurrentBudget } from "@/actions/budget";
@@ -9,7 +10,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { DashboardOverview } from "./_components/transaction-overview";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({ searchParams }) {
+  // Admins land on the admin page (UC-1); "My own dashboard" adds ?view=me
+  const { view } = await searchParams;
+  if (view !== "me" && (await getAdminUser())) redirect("/admin");
+
   const [accounts, transactions] = await Promise.all([
     getUserAccounts(),
     getDashboardData(),

@@ -10,7 +10,7 @@ Built by Group 2 for Software Engineering (CRN 88643), Fall 2026: Eziz Bagshiyev
 
 | Feature | Page | What it does |
 |---|---|---|
-| Sign up and log in | `/sign-up`, `/sign-in` | Clerk accounts with a 6-digit email verification code |
+| Sign up and log in | `/sign-up`, `/sign-in` | Clerk accounts with a 6-digit email verification code; client and admin roles |
 | Dashboard | `/dashboard` | Income, spending and every account balance, with a monthly expense chart |
 | Income and expenses | `/transaction/create` | Amount, category, date, description and an optional recurring schedule |
 | AI receipt scanner | `/transaction/create` | Upload a receipt photo and Gemini fills in the amount, date, store and category |
@@ -19,9 +19,14 @@ Built by Group 2 for Software Engineering (CRN 88643), Fall 2026: Eziz Bagshiyev
 | Loan planner | `/loans` | Monthly payment, total interest, payoff date and a full repayment schedule |
 | AI advisor | `/advisor` | Chat that answers from a summary of your last 90 days; the conversation is saved |
 | Custom categories | `/categories` | Your own income and expense categories next to the built-in ones |
-| Notifications | `/notifications` | Budget alerts and loan updates, with delivery status |
+| Notifications | `/notifications` | Budget alerts, loan updates and new rewards, with delivery status |
+| Transaction history | `/account/[id]` | Every transaction for an account, searchable and filterable |
+| Financial notes | `/transaction/create` | Suggests descriptions you've used before in the chosen category |
+| Rewards | `/rewards` | Badges, points and levels for logging regularly, staying on budget and paying off loans |
+| Light and dark mode | moon button in the header | Switches the whole app between light and dark, remembered per browser |
+| Admin | `/admin` | Admins see every user with their accounts, transactions, loans and rewards, change roles and delete users |
 
-Planned for Sprint 4: rewards, a light and dark theme toggle, an admin page for managing users, and Arcjet rate limiting.
+Bank accounts can be checking, savings or credit card.
 
 ## Tech stack
 
@@ -30,8 +35,13 @@ Planned for Sprint 4: rewards, a light and dark theme toggle, an admin page for 
 - **Database:** PostgreSQL on Supabase, accessed through Prisma ORM
 - **AI:** Google Gemini API (receipt scanning and financial advice)
 - **Email and background jobs:** Resend and Inngest
-- **Rate limiting:** Arcjet (optional; the app runs without a key)
 - **Hosting:** Vercel
+
+## Roles
+
+Everyone who signs up is a client and only ever sees their own data. An admin also gets an **Admin** page listing every user, with a detail page per user. To make the first admin, put that person's email in `ADMIN_EMAILS`; they become an admin the next time they sign in, and from then on they can promote or demote others on the Admin page. Clients who open an admin page get a 403 access denied page.
+
+Deleting a user on the Admin page removes their Clerk login and their `users` row, and the cascade removes all their accounts, transactions, loans and other rows. The same email can then sign up again as a brand-new user.
 
 ## How the front end talks to the database
 
@@ -41,12 +51,13 @@ For example, saving a loan calls `createLoan()` in `actions/loan.js`. It re-runs
 
 ## Database
 
-Eight tables: `users`, `accounts`, `transactions`, `budgets`, `loans`, `categories`, `ai_messages` and `notifications`. Every table links back to `users` with a foreign key and cascade delete.
+Nine tables: `users`, `accounts`, `transactions`, `budgets`, `loans`, `categories`, `ai_messages`, `notifications` and `rewards`. Every table links back to `users` with a foreign key and cascade delete. `users.role` is `CLIENT` or `ADMIN`.
 
 - `prisma/schema.prisma` is the data model.
 - `prisma/migrations/` holds the migrations; `npx prisma migrate deploy` applies them.
 - `database/fiscora_schema.sql` creates all eight tables on an empty PostgreSQL database in one go.
 - `database/demo_data.sql` adds sample rows for testing.
+- `database/sprint4_update.sql` upgrades a database created before Sprint 4 (adds the role column, the rewards table and the credit card account type). Run it once in the Supabase SQL Editor.
 
 ## Running it locally
 
@@ -80,8 +91,10 @@ You need Node.js 20 or newer, Git, and free accounts with Clerk, Supabase and Go
    # Gemini (aistudio.google.com -> Get API key)
    GEMINI_API_KEY=
 
+   # Admins: comma-separated emails that get the admin role when they sign in
+   ADMIN_EMAILS=
+
    # Optional
-   ARCJET_KEY=
    RESEND_API_KEY=
    ```
 
@@ -123,7 +136,7 @@ components/    shared UI, including shadcn/ui components
 data/          landing page content and default categories
 database/      plain SQL schema and demo data
 emails/        email templates
-lib/           Prisma client, loan calculator, Arcjet, Inngest jobs, helpers
+lib/           Prisma client, loan calculator, rewards rules, Inngest jobs, helpers
 prisma/        schema and migrations
 tests/         loan calculator tests
 ```
