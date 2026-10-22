@@ -14,6 +14,7 @@ model User {
   email         String    @unique
   name          String?
   imageUrl      String?
+  role          Role      @default(CLIENT) // Sprint 4: client or admin
   transactions  Transaction[]
   accounts      Account[]
   budgets       Budget[]
@@ -22,6 +23,8 @@ model User {
   loans         Loan[]
   aiMessages    AiMessage[]
   notifications Notification[]
+  // Sprint 4
+  rewards       Reward[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
@@ -91,6 +94,7 @@ enum TransactionType {
 enum AccountType {
   CURRENT
   SAVINGS
+  CREDIT_CARD
 }
 
 enum TransactionStatus {
@@ -204,10 +208,35 @@ enum NotificationType {
   WEEKLY_SUMMARY
   UNUSUAL_TRANSACTION
   LOAN_ADDED
+  REWARD_EARNED
 }
 
 enum NotificationStatus {
   QUEUED
   SENT
   FAILED
+}
+
+// ---------------------------------------------------------------
+// Sprint 4
+// ---------------------------------------------------------------
+
+enum Role {
+  CLIENT
+  ADMIN
+}
+
+// Feature 14 Gamification / Rewards: one row per badge a user has earned
+model Reward {
+  id          String   @id @default(uuid())
+  code        String   // badge id from lib/rewards.js, e.g. FIRST_TRANSACTION
+  title       String
+  points      Int
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  earnedAt    DateTime @default(now())
+
+  @@unique([userId, code])
+  @@index([userId])
+  @@map("rewards")
 }
