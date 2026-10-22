@@ -67,7 +67,7 @@ export function AccountCard({ account }) {
             ${parseFloat(balance).toFixed(2)}
           </div>
           <p className="text-xs text-muted-foreground">
-            {type.charAt(0) + type.slice(1).toLowerCase()} Account
+            {{ CURRENT: "Checking", SAVINGS: "Savings", CREDIT_CARD: "Credit card" }[type] || type} account
           </p>
         </CardContent>
         <CardFooter className="flex justify-between text-sm text-muted-foreground">
