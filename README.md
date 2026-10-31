@@ -12,19 +12,19 @@ Built by Group 2 for Software Engineering (CRN 88643), Fall 2026: Eziz Bagshiyev
 |---|---|---|
 | Sign up and log in | `/sign-up`, `/sign-in` | Clerk accounts with a 6-digit email verification code; client and admin roles |
 | Dashboard | `/dashboard` | Income, spending and every account balance, with a monthly expense chart |
-| Income and expenses | `/transaction/create` | Amount, category, date, description and an optional recurring schedule |
+| Income and expenses | `/transaction/create` | Amount, category, date, description and an optional recurring schedule; a scanned receipt photo is kept with the expense |
 | AI receipt scanner | `/transaction/create` | Upload a receipt photo and Gemini fills in the amount, date, store and category |
 | Monthly budget | `/dashboard` | Set a limit, watch the progress bar, get an email alert at 80% |
 | Bank accounts | `/dashboard`, `/account/[id]` | Checking and savings, each with its own balance and history |
 | Loan planner | `/loans` | Monthly payment, total interest, payoff date and a full repayment schedule |
 | AI advisor | `/advisor` | Chat that answers from a summary of your last 90 days; the conversation is saved |
 | Custom categories | `/categories` | Your own income and expense categories next to the built-in ones |
-| Notifications | `/notifications` | Budget alerts, loan updates and new rewards, with delivery status |
+| Notifications | `/notifications` | Budget alerts, unusual-expense alerts, weekly summaries, loan updates and new rewards, with delivery status; weekly summaries can be switched off |
 | Transaction history | `/account/[id]` | Every transaction for an account, searchable and filterable |
 | Financial notes | `/transaction/create` | Suggests descriptions you've used before in the chosen category |
 | Rewards | `/rewards` | Badges, points and levels for logging regularly, staying on budget and paying off loans |
 | Light and dark mode | moon button in the header | Switches the whole app between light and dark, remembered per browser |
-| Admin | `/admin` | Admins see every user with their accounts, transactions, loans and rewards, change roles and delete users |
+| Admin | `/admin` | Admins see every user with their accounts, transactions, loans and rewards, change roles, deactivate or reactivate accounts and delete users |
 
 Bank accounts can be checking, savings or credit card.
 
@@ -39,7 +39,7 @@ Bank accounts can be checking, savings or credit card.
 
 ## Roles
 
-Everyone who signs up is a client and only ever sees their own data. An admin also gets an **Admin** page listing every user, with a detail page per user. To make the first admin, put that person's email in `ADMIN_EMAILS`; they become an admin the next time they sign in, and from then on they can promote or demote others on the Admin page. Clients who open an admin page get a 403 access denied page.
+Everyone who signs up is a client and only ever sees their own data. An admin also gets an **Admin** page listing every user, with a detail page per user. To make the first admin, put that person's email in `ADMIN_EMAILS`; they become an admin the next time they sign in, and from then on they can promote or demote others on the Admin page. Clients who open an admin page get a 403 access denied page. An admin can also deactivate an account: its login is refused (the user is locked in Clerk) and any session still open shows a "deactivated" page, until an admin reactivates it. Nothing is deleted. Every session also ends after 30 minutes without activity.
 
 Deleting a user on the Admin page removes their Clerk login and their `users` row, and the cascade removes all their accounts, transactions, loans and other rows. The same email can then sign up again as a brand-new user.
 
@@ -94,8 +94,19 @@ You need Node.js 20 or newer, Git, and free accounts with Clerk, Supabase and Go
    # Admins: comma-separated emails that get the admin role when they sign in
    ADMIN_EMAILS=
 
-   # Optional
+   # Email (resend.com -> API Keys). Without a verified domain Resend only
+   # delivers to the email address you signed up with.
    RESEND_API_KEY=
+
+   # Scheduled jobs (added for you by the Inngest integration on Vercel)
+   INNGEST_EVENT_KEY=
+   INNGEST_SIGNING_KEY=
+
+   # Receipt photos (added for you when a Vercel Blob store is connected)
+   BLOB_READ_WRITE_TOKEN=
+
+   # Optional: Gemini model, default gemini-3.5-flash-lite
+   GEMINI_MODEL=
    ```
 
 3. Create the tables (first time only):
