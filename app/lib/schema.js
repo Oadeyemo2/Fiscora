@@ -17,6 +17,7 @@ export const transactionSchema = z
         message: "Amount must be a number greater than zero",
       }),
     description: z.string().optional(),
+    receiptUrl: z.string().nullable().optional(), // feature 4: saved receipt photo
     date: z.date({ required_error: "Date is required" }),
     accountId: z.string().min(1, "Account is required"),
     category: z.string().min(1, "Category is required"),
