@@ -18,6 +18,9 @@ export async function createTransaction(data) {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
+    // REQ-2 / REQ-3: amount must be a number greater than zero
+    if (!(Number(data.amount) > 0)) throw new Error("Amount must be greater than zero");
+
     const user = await db.user.findUnique({
       where: { clerkUserId: userId },
     });
@@ -97,6 +100,9 @@ export async function updateTransaction(id, data) {
   try {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
+
+    // REQ-2 / REQ-3: amount must be a number greater than zero
+    if (!(Number(data.amount) > 0)) throw new Error("Amount must be greater than zero");
 
     const user = await db.user.findUnique({
       where: { clerkUserId: userId },
