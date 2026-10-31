@@ -68,6 +68,9 @@ export async function updateBudget(amount) {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
+    // REQ-5: the limit must be greater than zero
+    if (!(Number(amount) > 0)) throw new Error("Budget must be greater than zero");
+
     const user = await db.user.findUnique({
       where: { clerkUserId: userId },
     });

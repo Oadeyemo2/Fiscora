@@ -17,6 +17,11 @@ export function ReceiptScanner({ onScanComplete }) {
   } = useFetch(scanReceipt);
 
   const handleReceiptScan = async (file) => {
+    // REQ-4: images only (JPG, PNG and similar), up to 5 MB
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please choose an image file (JPG or PNG)");
+      return;
+    }
     if (file.size > 5 * 1024 * 1024) {
       toast.error("File size should be less than 5MB");
       return;

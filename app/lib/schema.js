@@ -10,7 +10,12 @@ export const accountSchema = z.object({
 export const transactionSchema = z
   .object({
     type: z.enum(["INCOME", "EXPENSE"]),
-    amount: z.string().min(1, "Amount is required"),
+    amount: z
+      .string()
+      .min(1, "Amount is required")
+      .refine((v) => Number.isFinite(Number(v)) && Number(v) > 0, {
+        message: "Amount must be a number greater than zero",
+      }),
     description: z.string().optional(),
     date: z.date({ required_error: "Date is required" }),
     accountId: z.string().min(1, "Account is required"),
