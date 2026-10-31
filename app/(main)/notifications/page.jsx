@@ -2,13 +2,15 @@ import { getNotifications, markAllNotificationsRead } from "@/actions/notificati
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { getDbUser } from "@/lib/get-db-user";
+import { EmailSettings } from "./_components/email-settings";
 
 export const metadata = { title: "Notifications | Fiscora" };
 
 const STATUS_VARIANT = { SENT: "default", QUEUED: "secondary", FAILED: "destructive" };
 
 export default async function NotificationsPage() {
-  const notifications = await getNotifications();
+  const [notifications, user] = await Promise.all([getNotifications(), getDbUser()]);
   const unread = notifications.filter((n) => !n.isRead).length;
 
   return (
@@ -22,9 +24,11 @@ export default async function NotificationsPage() {
         )}
       </div>
 
+      <EmailSettings email={user.email} weeklySummary={user.weeklySummary} />
+
       {notifications.length === 0 && (
         <p className="text-muted-foreground">
-          Nothing yet. Budget alerts, loan updates and weekly summaries will show up here.
+          Nothing yet. Budget alerts, unusual expenses, loan updates, rewards and weekly summaries will show up here.
         </p>
       )}
 
