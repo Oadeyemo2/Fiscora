@@ -88,6 +88,9 @@ export function UserTable({ users, currentAdminId }) {
                     <Badge variant={u.role === "ADMIN" ? "default" : "secondary"}>
                       {u.role === "ADMIN" ? "Admin" : "Client"}
                     </Badge>
+                    {!u.isActive && (
+                      <Badge variant="destructive" className="ml-1">Deactivated</Badge>
+                    )}
                   </TableCell>
                   <TableCell className="text-right">{u.counts.accounts}</TableCell>
                   <TableCell className="text-right">{u.counts.transactions}</TableCell>

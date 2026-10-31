@@ -3,9 +3,9 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Trash2 } from "lucide-react";
+import { Trash2, Ban, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { setUserRole, deleteUserAccount } from "@/actions/admin";
+import { setUserRole, setUserActive, deleteUserAccount } from "@/actions/admin";
 
 export function UserActions({ user, isSelf }) {
   const router = useRouter();
@@ -17,6 +17,17 @@ export function UserActions({ user, isSelf }) {
       try {
         await setUserRole(user.id, role);
         toast.success(role === "ADMIN" ? "Now an admin" : "Now a client");
+        router.refresh();
+      } catch (e) {
+        toast.error(e.message);
+      }
+    });
+
+  const changeActive = (active) =>
+    startTransition(async () => {
+      try {
+        await setUserActive(user.id, active);
+        toast.success(active ? "Account reactivated" : "Account deactivated; their login is now refused");
         router.refresh();
       } catch (e) {
         toast.error(e.message);
@@ -48,6 +59,16 @@ export function UserActions({ user, isSelf }) {
       ) : (
         <Button variant="outline" disabled={pending} onClick={() => changeRole("ADMIN")}>
           Make admin
+        </Button>
+      )}
+
+      {user.isActive ? (
+        <Button variant="outline" disabled={pending} onClick={() => changeActive(false)}>
+          <Ban className="h-4 w-4" /> Deactivate
+        </Button>
+      ) : (
+        <Button variant="outline" disabled={pending} onClick={() => changeActive(true)}>
+          <RotateCcw className="h-4 w-4" /> Reactivate
         </Button>
       )}
 
