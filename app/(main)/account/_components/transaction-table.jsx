@@ -12,6 +12,7 @@ import {
   ChevronRight,
   RefreshCw,
   Clock,
+  ImageIcon,
 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -358,7 +359,22 @@ export function TransactionTable({ transactions }) {
                   <TableCell>
                     {format(new Date(transaction.date), "PP")}
                   </TableCell>
-                  <TableCell>{transaction.description}</TableCell>
+                  <TableCell>
+                    {transaction.description}
+                    {/* Feature 4: open the saved receipt photo */}
+                    {transaction.receiptUrl && (
+                      <a
+                        href={transaction.receiptUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Open receipt photo"
+                        className="ml-2 inline-flex align-middle text-muted-foreground hover:text-foreground"
+                      >
+                        <ImageIcon className="h-4 w-4" />
+                        <span className="sr-only">Receipt photo</span>
+                      </a>
+                    )}
+                  </TableCell>
                   <TableCell className="capitalize">
                     <span
                       style={{
