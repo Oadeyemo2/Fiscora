@@ -33,13 +33,14 @@ export default async function AdminUserPage({ params }) {
             <Badge variant={u.role === "ADMIN" ? "default" : "secondary"}>
               {u.role === "ADMIN" ? "Admin" : "Client"}
             </Badge>
+            {!u.isActive && <Badge variant="destructive">Deactivated</Badge>}
           </div>
           <p className="text-muted-foreground">
             {u.email} · joined {new Date(u.createdAt).toLocaleDateString("en-US")} ·{" "}
             {u.counts.transactions} transactions · {u.counts.aiMessages} advisor messages
           </p>
         </div>
-        <UserActions user={{ id: u.id, role: u.role }} isSelf={u.id === admin.id} />
+        <UserActions user={{ id: u.id, role: u.role, isActive: u.isActive }} isSelf={u.id === admin.id} />
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
