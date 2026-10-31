@@ -77,14 +77,21 @@ async function buildFinancialSummary(userId) {
   return { text: lines.join("\n"), transactionCount: transactions.length };
 }
 
-function buildPrompt(summary, history, question) {
+function buildPrompt(summary, history, question, hasData = true) {
   const past = history
     .map((m) => `${m.role === "USER" ? "User" : "Advisor"}: ${m.content}`)
     .join("\n");
 
+  const guidance = hasData
+    ? `Base every suggestion on the figures below. Name the actual categories and amounts.
+Do not give generic tips that ignore these numbers.`
+    : `This user has not logged any transactions in the last 90 days, so there are no
+personal figures yet. Answer the question with practical, general guidance for a student
+or young professional, say briefly that the advice will be more personal once they add
+income and expenses in Fiscora, and do not invent any numbers about this user.`;
+
   return `You are Fiscora's financial advisor for students and young professionals.
-Base every suggestion on the figures below. Name the actual categories and amounts.
-Do not give generic tips that ignore these numbers. Keep the answer under 200 words,
+${guidance} Keep the answer under 200 words,
 in plain sentences or a short list. You are not a licensed advisor; do not recommend
 specific stocks or investment products.
 
@@ -137,20 +144,16 @@ export async function askAdvisor(question) {
       }),
     ]);
 
-    let answer;
-    if (summary.transactionCount === 0) {
-      // Exception path: no data yet, so there is nothing personal to analyze
-      answer =
-        "You don't have any transactions from the last 90 days yet, so I can't give advice based on your spending. Add your income and a few expenses (or scan some receipts) and ask again. In the meantime, a simple starting point is to set a monthly budget on the dashboard.";
-    } else {
-      if (!process.env.GEMINI_API_KEY) throw new Error("AI_UNAVAILABLE");
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
-      const prompt = buildPrompt(summary.text, history.reverse(), text);
-      const result = await withTimeout(model.generateContent(prompt), AI_TIMEOUT_MS);
-      answer = result.response.text().trim();
-      if (!answer) throw new Error("AI_EMPTY");
-    }
+    // With no transactions yet the AI still answers, but gives general
+    // guidance instead of advice based on the user's own figures
+    const hasData = summary.transactionCount > 0;
+    if (!process.env.GEMINI_API_KEY) throw new Error("AI_UNAVAILABLE");
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const prompt = buildPrompt(summary.text, history.reverse(), text, hasData);
+    const result = await withTimeout(model.generateContent(prompt), AI_TIMEOUT_MS);
+    const answer = result.response.text().trim();
+    if (!answer) throw new Error("AI_EMPTY");
 
     const reply = await db.aiMessage.create({
       data: { userId: user.id, role: "ASSISTANT", content: answer },
