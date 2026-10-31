@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2, ImageIcon, X } from "lucide-react";
 import { format } from "date-fns";
 import { useRouter, useSearchParams } from "next/navigation";
 import useFetch from "@/hooks/use-fetch";
@@ -61,6 +61,7 @@ export function AddTransactionForm({
             category: initialData.category,
             date: new Date(initialData.date),
             isRecurring: initialData.isRecurring,
+            receiptUrl: initialData.receiptUrl || null,
             ...(initialData.recurringInterval && {
               recurringInterval: initialData.recurringInterval,
             }),
@@ -72,6 +73,7 @@ export function AddTransactionForm({
             accountId: accounts.find((ac) => ac.isDefault)?.id,
             date: new Date(),
             isRecurring: false,
+            receiptUrl: null,
           },
   });
 
@@ -104,7 +106,13 @@ export function AddTransactionForm({
       if (scannedData.category) {
         setValue("category", scannedData.category);
       }
-      toast.success("Receipt scanned successfully");
+      // Feature 4: the photo is kept with the expense
+      setValue("receiptUrl", scannedData.receiptUrl || null);
+      toast.success(
+        scannedData.receiptUrl
+          ? "Receipt scanned and photo saved"
+          : "Receipt scanned successfully"
+      );
     }
   };
 
@@ -125,6 +133,7 @@ export function AddTransactionForm({
   const date = watch("date");
   const category = watch("category");
   const description = watch("description");
+  const receiptUrl = watch("receiptUrl");
 
   // Feature 12: suggest descriptions used before in the chosen category
   const [suggestions, setSuggestions] = useState([]);
@@ -298,6 +307,23 @@ export function AddTransactionForm({
           <p className="text-sm text-red-500">{errors.description.message}</p>
         )}
       </div>
+
+      {/* Feature 4: receipt photo saved by the scanner */}
+      {receiptUrl && (
+        <div className="flex items-center gap-3 rounded-lg border p-3 text-sm">
+          <ImageIcon className="h-4 w-4 text-muted-foreground" />
+          <a href={receiptUrl} target="_blank" rel="noopener noreferrer" className="underline">
+            Receipt photo attached
+          </a>
+          <button
+            type="button"
+            onClick={() => setValue("receiptUrl", null)}
+            className="ml-auto inline-flex items-center gap-1 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" /> Remove
+          </button>
+        </div>
+      )}
 
       {/* Recurring Toggle */}
       <div className="flex flex-row items-center justify-between rounded-lg border p-4">

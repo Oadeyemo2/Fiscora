@@ -153,6 +153,79 @@ export default function EmailTemplate({
       </Html>
     );
   }
+
+  // UC-10: weekly summary (sent on Mondays to users who have it switched on)
+  if (type === "weekly-summary") {
+    return (
+      <Html>
+        <Head />
+        <Preview>Your week in Fiscora</Preview>
+        <Body style={styles.body}>
+          <Container style={styles.container}>
+            <Heading style={styles.title}>Your Week in Fiscora</Heading>
+            <Text style={styles.text}>Hello {userName},</Text>
+            <Text style={styles.text}>
+              Here&rsquo;s what happened from {data?.from} to {data?.to}:
+            </Text>
+            <Section style={styles.statsContainer}>
+              <div style={styles.stat}>
+                <Text style={styles.text}>Income</Text>
+                <Text style={styles.heading}>${data?.income}</Text>
+              </div>
+              <div style={styles.stat}>
+                <Text style={styles.text}>Expenses</Text>
+                <Text style={styles.heading}>${data?.expenses}</Text>
+              </div>
+              <div style={styles.stat}>
+                <Text style={styles.text}>Transactions</Text>
+                <Text style={styles.heading}>{data?.count}</Text>
+              </div>
+            </Section>
+            {data?.topCategories?.length > 0 && (
+              <Section style={styles.section}>
+                <Heading style={styles.heading}>Where the money went</Heading>
+                {data.topCategories.map(([category, amount]) => (
+                  <div key={category} style={styles.row}>
+                    <Text style={styles.text}>{category}</Text>
+                    <Text style={styles.text}>${amount}</Text>
+                  </div>
+                ))}
+              </Section>
+            )}
+            {data?.budgetLine && <Text style={styles.text}>{data.budgetLine}</Text>}
+            <Text style={styles.footer}>
+              You can switch weekly summaries off on the Notifications page.
+            </Text>
+          </Container>
+        </Body>
+      </Html>
+    );
+  }
+
+  // UC-10: unusual transaction alert
+  if (type === "unusual-transaction") {
+    return (
+      <Html>
+        <Head />
+        <Preview>Unusual expense in Fiscora</Preview>
+        <Body style={styles.body}>
+          <Container style={styles.container}>
+            <Heading style={styles.title}>Unusual Expense</Heading>
+            <Text style={styles.text}>Hello {userName},</Text>
+            <Text style={styles.text}>
+              An expense of ${data?.amount} for {data?.category}
+              {data?.description ? ` (${data.description})` : ""} was added to{" "}
+              {data?.accountName} on {data?.date}.
+            </Text>
+            <Text style={styles.text}>{data?.reason}</Text>
+            <Text style={styles.footer}>
+              If you added this yourself, you can ignore this email.
+            </Text>
+          </Container>
+        </Body>
+      </Html>
+    );
+  }
 }
 
 const styles = {
