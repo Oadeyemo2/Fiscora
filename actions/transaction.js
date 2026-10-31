@@ -3,9 +3,16 @@
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { put } from "@vercel/blob";
+import { checkUnusualExpense } from "@/lib/unusual-expense";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+// Feature 4: only receipt photos stored in this app's Vercel Blob store are accepted
+const BLOB_URL = /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\//i;
+const cleanReceiptUrl = (url) => (typeof url === "string" && BLOB_URL.test(url) ? url : null);
 
 const serializeAmount = (obj) => ({
   ...obj,
@@ -49,6 +56,7 @@ export async function createTransaction(data) {
       const newTransaction = await tx.transaction.create({
         data: {
           ...data,
+          receiptUrl: cleanReceiptUrl(data.receiptUrl),
           userId: user.id,
           nextRecurringDate:
             data.isRecurring && data.recurringInterval
@@ -67,6 +75,10 @@ export async function createTransaction(data) {
 
     revalidatePath("/dashboard");
     revalidatePath(`/account/${transaction.accountId}`);
+
+    // UC-10: check for an unusual expense after the response is sent,
+    // so the alert never slows down or breaks adding the expense
+    after(() => checkUnusualExpense(transaction));
 
     return { success: true, data: serializeAmount(transaction) };
   } catch (error) {
@@ -143,6 +155,7 @@ export async function updateTransaction(id, data) {
         },
         data: {
           ...data,
+          ...(data.receiptUrl !== undefined ? { receiptUrl: cleanReceiptUrl(data.receiptUrl) } : {}),
           nextRecurringDate:
             data.isRecurring && data.recurringInterval
               ? calculateNextRecurringDate(data.date, data.recurringInterval)
@@ -207,6 +220,9 @@ export async function getUserTransactions(query = {}) {
 
 // Scan Receipt
 export async function scanReceipt(file) {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+
   try {
     const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || "gemini-3.5-flash-lite" });
 
@@ -257,6 +273,8 @@ export async function scanReceipt(file) {
         description: data.description,
         category: data.category,
         merchantName: data.merchantName,
+        // Feature 4: keep a copy of the photo so it can be opened later
+        receiptUrl: await saveReceiptPhoto(file, userId, arrayBuffer),
       };
     } catch (parseError) {
       console.error("Error parsing JSON response:", parseError);
@@ -265,6 +283,24 @@ export async function scanReceipt(file) {
   } catch (error) {
     console.error("Error scanning receipt:", error);
     throw new Error("Failed to scan receipt");
+  }
+}
+
+// Feature 4 Expense Tracking: stores the receipt photo in Vercel Blob and
+// returns its URL, or null if storage is not set up or the upload fails.
+async function saveReceiptPhoto(file, clerkUserId, arrayBuffer) {
+  if (!process.env.BLOB_READ_WRITE_TOKEN) return null;
+  try {
+    const ext = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+    const blob = await put(`receipts/${clerkUserId}/receipt.${ext}`, Buffer.from(arrayBuffer), {
+      access: "public",
+      addRandomSuffix: true,
+      contentType: file.type,
+    });
+    return blob.url;
+  } catch (error) {
+    console.error("Saving receipt photo failed:", error.message);
+    return null;
   }
 }
 

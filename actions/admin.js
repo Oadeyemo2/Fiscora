@@ -1,6 +1,7 @@
 "use server";
 
-// Admin System: view every user and their data, change roles, delete users.
+// Admin System: view every user and their data, change roles, deactivate,
+// reactivate and delete users.
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/prisma";
@@ -12,7 +13,7 @@ export async function getAdminUser() {
   const { userId } = await auth();
   if (!userId) return null;
   const user = await db.user.findUnique({ where: { clerkUserId: userId } });
-  return user?.role === "ADMIN" ? user : null;
+  return user?.role === "ADMIN" && user.isActive ? user : null;
 }
 
 async function requireAdmin() {
@@ -58,6 +59,7 @@ export async function getAdminOverview() {
       name: u.name,
       email: u.email,
       role: u.role,
+      isActive: u.isActive,
       createdAt: u.createdAt,
       budget: toNumber(u.budgets[0]?.amount),
       counts: u._count,
@@ -89,6 +91,7 @@ export async function getAdminUserDetail(id) {
     name: u.name,
     email: u.email,
     role: u.role,
+    isActive: u.isActive,
     imageUrl: u.imageUrl,
     createdAt: u.createdAt,
     budget: toNumber(u.budgets[0]?.amount),
@@ -130,6 +133,32 @@ export async function setUserRole(id, role) {
     throw new Error("You can't remove your own admin role.");
   }
   await db.user.update({ where: { id }, data: { role } });
+  revalidatePath("/admin");
+  revalidatePath(`/admin/users/${id}`);
+  return { success: true };
+}
+
+// UC-1: deactivates or reactivates an account. A deactivated user is locked
+// in Clerk, so their login is refused, and Fiscora blocks any session they
+// still have. Nothing is deleted, so reactivating brings everything back.
+export async function setUserActive(id, active) {
+  const admin = await requireAdmin();
+  if (id === admin.id) throw new Error("You can't deactivate your own account.");
+
+  const user = await db.user.findUnique({ where: { id } });
+  if (!user) throw new Error("User not found");
+
+  try {
+    const clerk = await clerkClient();
+    if (active) await clerk.users.unlockUser(user.clerkUserId);
+    else await clerk.users.lockUser(user.clerkUserId);
+  } catch (error) {
+    if (error?.status !== 404) {
+      throw new Error("Couldn't update the login in Clerk: " + (error?.message || "unknown error"));
+    }
+  }
+
+  await db.user.update({ where: { id }, data: { isActive: Boolean(active) } });
   revalidatePath("/admin");
   revalidatePath(`/admin/users/${id}`);
   return { success: true };
