@@ -149,7 +149,7 @@ export async function askAdvisor(question) {
     const hasData = summary.transactionCount > 0;
     if (!process.env.GEMINI_API_KEY) throw new Error("AI_UNAVAILABLE");
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || "gemini-3.8-flash" });
+    const model = genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || "gemini-3.5-flash-lite" });
     const prompt = buildPrompt(summary.text, history.reverse(), text, hasData);
     const result = await withTimeout(model.generateContent(prompt), AI_TIMEOUT_MS);
     const answer = result.response.text().trim();
