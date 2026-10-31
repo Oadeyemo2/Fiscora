@@ -85,7 +85,7 @@ export function AdvisorChat({ initialMessages }) {
 
           {thinking && (
             <div className="flex gap-3 items-center text-muted-foreground text-sm">
-              <Loader2 className="h-5 w-5 animate-spin" /> Looking at your numbers...
+              <Loader2 className="h-5 w-5 animate-spin" /> Working on an answer...
             </div>
           )}
           <div ref={bottomRef} />
