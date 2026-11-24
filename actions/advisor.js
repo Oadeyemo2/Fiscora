@@ -33,30 +33,41 @@ async function buildFinancialSummary(userId) {
     db.loan.findMany({ where: { userId, status: "ACTIVE" } }),
   ]);
 
-  let income = 0;
-  let expenses = 0;
-  const byCategory = {};
-  for (const t of transactions) {
-    const amount = t.amount.toNumber();
-    if (t.type === "INCOME") income += amount;
-    else {
-      expenses += amount;
-      const name = categoryName(t.category);
-      byCategory[name] = (byCategory[name] || 0) + amount;
-    }
-  }
+  // This calendar month, so questions about "this month" get this month's figures
+  // (UTC midnight on the 1st, so a transaction dated the 1st is always included)
+  const now = new Date();
+  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+  const thisMonth = transactions.filter((t) => new Date(t.date) >= monthStart);
 
-  const topCategories = Object.entries(byCategory)
-    .sort((a, b) => b[1] - a[1])
-    .map(([name, total]) => `- ${name}: ${money(total)}`)
-    .join("\n");
+  const month = totals(thisMonth);
+  const ninety = totals(transactions);
+  const budgetAmount = budget ? budget.amount.toNumber() : null;
+  const monthName = monthStart.toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
 
   const lines = [
-    `Period: last 90 days (${transactions.length} transactions)`,
-    `Total income: ${money(income)}`,
-    `Total expenses: ${money(expenses)}`,
-    `Net: ${money(income - expenses)}`,
-    `Spending by category:\n${topCategories || "- none recorded"}`,
+    `THIS MONTH: ${monthName} so far (${thisMonth.length} transactions)`,
+    `Income: ${money(month.income)}`,
+    `Expenses: ${money(month.expenses)}`,
+    `Net: ${money(month.income - month.expenses)}`,
+    `Spending by category:\n${month.categories || "- none recorded"}`,
+    `Budget used this month: ${
+      budgetAmount
+        ? `${money(month.expenses)} of ${money(budgetAmount)} (${Math.round(
+            (month.expenses / budgetAmount) * 100
+          )}%)`
+        : "no budget set"
+    }`,
+    ``,
+    `LAST 90 DAYS (${transactions.length} transactions)`,
+    `Income: ${money(ninety.income)}`,
+    `Expenses: ${money(ninety.expenses)}`,
+    `Net: ${money(ninety.income - ninety.expenses)}`,
+    `Spending by category:\n${ninety.categories || "- none recorded"}`,
+    ``,
     `Accounts: ${
       accounts.map((a) => `${a.name} (${a.type}) ${money(a.balance.toNumber())}`).join("; ") ||
       "none"
@@ -77,6 +88,27 @@ async function buildFinancialSummary(userId) {
   return { text: lines.join("\n"), transactionCount: transactions.length };
 }
 
+// Income, expenses and spending by category for a list of transactions
+function totals(list) {
+  let income = 0;
+  let expenses = 0;
+  const byCategory = {};
+  for (const t of list) {
+    const amount = t.amount.toNumber();
+    if (t.type === "INCOME") income += amount;
+    else {
+      expenses += amount;
+      const name = categoryName(t.category);
+      byCategory[name] = (byCategory[name] || 0) + amount;
+    }
+  }
+  const categories = Object.entries(byCategory)
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, total]) => `- ${name}: ${money(total)}`)
+    .join("\n");
+  return { income, expenses, categories };
+}
+
 function buildPrompt(summary, history, question, hasData = true) {
   const past = history
     .map((m) => `${m.role === "USER" ? "User" : "Advisor"}: ${m.content}`)
@@ -84,7 +116,10 @@ function buildPrompt(summary, history, question, hasData = true) {
 
   const guidance = hasData
     ? `Base every suggestion on the figures below. Name the actual categories and amounts.
-Do not give generic tips that ignore these numbers.`
+Do not give generic tips that ignore these numbers. When the question is about this month
+(or "so far", or the budget), use the THIS MONTH figures and the budget used this month.
+Use the LAST 90 DAYS figures only for trends or questions about a longer period, and say
+which period you are using.`
     : `This user has not logged any transactions in the last 90 days, so there are no
 personal figures yet. Answer the question with practical, general guidance for a student
 or young professional, say briefly that the advice will be more personal once they add
