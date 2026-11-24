@@ -10,8 +10,8 @@ export default async function AdvisorPage() {
       <div>
         <h1 className="text-5xl gradient-title">AI Advisor</h1>
         <p className="text-muted-foreground mt-2">
-          Ask about your own spending. Answers are based on your last 90 days of
-          transactions, your budget, accounts and loans.
+          Ask about your own spending. Answers use this month&rsquo;s figures and
+          your last 90 days of transactions, plus your budget, accounts and loans.
         </p>
       </div>
       <AdvisorChat initialMessages={history} />
